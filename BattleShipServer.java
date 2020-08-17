@@ -16,8 +16,10 @@ public class BattleShipServer {
 
 
     private static Vector<int[][]> PlayerBoards = new Vector<>();
+    private static Vector<String> Picks = new Vector<>();
     public static int counter = 0;
     public static int counter1 = 0;
+    public static int counter3 = 0;
 
 
 
@@ -46,6 +48,9 @@ public class BattleShipServer {
         private ObjectInputStream inputStreamPlayer;
         private String tabInString = "";
         private String tabInString2 = "";
+        private String answer = "";
+        private StringBuilder answer1 = new StringBuilder();
+        private String answer2 = "";
 
 
         public Handler(Socket socket) {
@@ -102,9 +107,6 @@ public class BattleShipServer {
                     }
                     else if(PlayerBoards.size()==2){
 
-
-
-                        try {
                             //System.out.println("Serwer wysyla tablice");
                             for(int[][] tab : PlayerBoards){
                                 for(int y=0;y<tab.length;y++){
@@ -118,24 +120,57 @@ public class BattleShipServer {
                             }
                             out.println(tabInString);
                             out.flush();
-                            outputStreamPlayer.writeObject(PlayerBoards);
-                            outputStreamPlayer.flush();
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-
-
 
                         counter++;
                     }
                 }
             }
+            if (counter==2){
+                boolean stop = false;
+                while(!stop){
+                    System.out.println("jestem gotowy na pickowanie");
+                    try {
+                        Picks.add(in.readLine());
+                        System.out.println("serwer otrzymal wiadomosc: " + Picks);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+
+                    boolean sent = false;
+
+                    while(!sent){
+                        if(Picks.size()==2){
+                            System.out.println(Picks);
+                            System.out.println("Serwer gotowy na wyslanie");
+                            for(String tab : Picks){
+                                answer1.append(tab);
+                            }
+
+                            out.println(answer1+" ");
+                            out.flush();
+                            System.out.println("Serwer wyslal picki: " + answer1);
+                            counter3++;
+                            sent=true;
+                            Picks.clear();
+                            answer1= new StringBuilder();
+                            System.out.println("Teraz " + Picks);
+                        }
+                        else{
+                            out.println("Not");
+                            out.flush();
+                        }
+                    }
+                    if(counter3==2){
+                        System.out.println("Wyslano juz: " + counter3 + " razy");
+                        sent=false;
+                    }
+
+                }
 
 
 
 
-
-
+            }
 
 /*
                 while (counter1<2){

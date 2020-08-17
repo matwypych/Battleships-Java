@@ -27,7 +27,10 @@ public class BattleShip extends Application {
     GameBoard playerBoard;
     GameBoard enemyBoard;
     public boolean running = false;
+    private boolean pickTime = false;
     private boolean myTurn = false;
+    private boolean player1 = false;
+    private boolean endGame = false;
     public int size;
     public int ships;
     private int shipsToHit;
@@ -40,6 +43,7 @@ public class BattleShip extends Application {
     private static Vector<int[][]> PlayerBoards = new Vector<>();
     private boolean received = false;
     private String Boards;
+    private boolean rec = false;
 
 
     public BattleShip(int p) {
@@ -82,15 +86,83 @@ public class BattleShip extends Application {
         }
 
         enemyBoard = new GameBoard(true, event -> {
-            Cell cell = (Cell) event.getSource();
-            if (enemyBoard.placeShip(new Ship(event.getButton() == MouseButton.PRIMARY), cell.x, cell.y)) {
-                if(myTurn){
-                    beginMarking(cell.x,cell.y);
-                    String myPick = String.valueOf(cell.x) + String.valueOf(cell.y);
-                    System.out.println(myPick);
-                    myTurn=false;
+            Thread t = new Thread(() -> {
+
+
+
+            if(!endGame && pickTime){
+
+                Cell cell = (Cell) event.getSource();
+                int counter1=0;
+                int counter2=0;
+                String ans = "";
+
+
+                System.out.println(cell.x + " " + cell.y);
+                System.out.println(endGame + "" + pickTime + "" + myTurn);
+
+                if(BattleShipClient.counter1<10) {
+                    BattleShipClient.counter = 0;
+
+                        if (enemyBoard.placeShip(new Ship(event.getButton() == MouseButton.PRIMARY), cell.x, cell.y)) {
+
+                            beginMarking(cell.x, cell.y);
+                            //System.out.println("Wysylam picka : " + String.valueOf(cell.x) + String.valueOf(cell.y) );
+                            client.SendRequest("tab" + String.valueOf(cell.x) + String.valueOf(cell.y));
+                            BattleShipClient.counter++;
+                            System.out.println("Licznik: " + BattleShipClient.counter++);
+                            rec = false;
+                        }
+
+
+                    while (!rec) {
+                        try {
+                            System.out.println("Probuje odebrac");
+                            ans = client.receiveRequest();
+
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                        if (ans.endsWith("Not")) {
+                            System.out.println("jescze nie gotowe do odebrania");
+                        }
+                        if (ans.endsWith(" ")) {
+                            System.out.println("Jest gotowe");
+                            rec = true;
+                            System.out.println("Odberalem: " + ans);
+                            BattleShipClient.counter1++;
+                        }
+                    }
                 }
+
+                   /*
+               if(player1 && !myTurn){
+                    String answer = "";
+                    try {
+                        answer = client.receiveRequest();
+                        System.out.println("Pick otrzymany z serwera: " +answer);
+                        myTurn=true;
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+                else if(!player1 && !myTurn){
+                    String answer = "";
+                    try {
+                        answer = client.receiveRequest();
+                        System.out.println("Pick otrzymany z serwera: " +answer);
+                        myTurn=true;
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+
+              */
             }
+            });
+            t.start();
+
+
         },size);
 
         playerBoard = new GameBoard(false, event -> {
@@ -144,7 +216,6 @@ public class BattleShip extends Application {
                             beginGame();
 
                             try {
-                                //PlayerBoards = BattleShipClient.ReceiveBoardFromServer();
                                 received=true;
                             } catch (Exception e) {
                                 e.printStackTrace();
@@ -157,10 +228,6 @@ public class BattleShip extends Application {
             }
 
         },size);
-
-
-
-
 
 
         VBox vbox = new VBox(50, playerBoard,enemyBoard);
@@ -181,21 +248,24 @@ public class BattleShip extends Application {
         System.out.println( "rozmiar tab = " + tab.length);
 
         if(tab.length==54){
-            for(int i = 0; i<tab.length/2; i+=3){
+            for(int i=tab.length/2; i<tab.length-2; i+=3){
                 if(tab[i]!=' '){
                     System.out.println(String.valueOf(tab[i]) + " . " + String.valueOf(tab[i+1]));
                     enemyBoard.board[Integer.parseInt(String.valueOf(tab[i+1]))][Integer.parseInt(String.valueOf(tab[i]))]=1;
                 }
             }
-
+            myTurn=true;
+            player1=true;
         }
         else if(tab.length==58){
-            for(int i=tab.length/2+2; i<tab.length-2; i+=3){
+            for(int i = 4; i<tab.length/2; i+=3){
                 if(tab[i]!=' '){
                     System.out.println(String.valueOf(tab[i]) + " . " + String.valueOf(tab[i+1]));
                     enemyBoard.board[Integer.parseInt(String.valueOf(tab[i+1]))][Integer.parseInt(String.valueOf(tab[i]))]=1;
                 }
             }
+            myTurn=true;
+            player1=false;
         }
 
 
@@ -217,13 +287,14 @@ public class BattleShip extends Application {
         enemyBoard.setSize(size);
         enemyBoard.showEnemyBoard();
 
-        myTurn=true;
+
+        pickTime=true;
 
     }
 
-    public void beginMarking(int x, int y){
+    public boolean beginMarking(int x, int y){
         System.out.println("Jestem w beginMatrk");
-        enemyBoard.MarkShip(x,y);
+        return enemyBoard.MarkShip(x,y);
     }
 
 
