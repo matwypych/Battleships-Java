@@ -68,15 +68,31 @@ public class GameBoard extends Parent implements EventHandler<ActionEvent>, Seri
             return true;
     }
 
-    public void MarkShip(int x, int y){
+    public boolean MarkShip(int x, int y){
         Cell cell = (Cell)((HBox)rows.getChildren().get(y)).getChildren().get(x);
-        if (board[x][y]==1) {
-            cell.setFill(javafx.scene.paint.Color.WHITE);
-            cell.setStroke(javafx.scene.paint.Color.GREEN);
+        if (board[y][x]==1) {
+            cell.setFill(javafx.scene.paint.Color.RED);
+            cell.setStroke(javafx.scene.paint.Color.BLACK);
+            return true;
         }
-        else if(board[y][x]==0){
-            cell.setFill(javafx.scene.paint.Color.WHITE);
-            cell.setStroke(javafx.scene.paint.Color.RED);
+        else {
+            cell.setFill(javafx.scene.paint.Color.BLACK);
+            cell.setStroke(javafx.scene.paint.Color.BLACK);
+            return false;
+        }
+    }
+
+    public boolean markHit(int x, int y){
+        Cell cell = (Cell)((HBox)rows.getChildren().get(y)).getChildren().get(x);
+        if (board[y][x]==1) {
+            cell.setFill(javafx.scene.paint.Color.RED);
+            cell.setStroke(javafx.scene.paint.Color.BLACK);
+            return true;
+        }
+        else {
+            cell.setFill(javafx.scene.paint.Color.BLACK);
+            cell.setStroke(javafx.scene.paint.Color.BLACK);
+            return false;
         }
     }
 

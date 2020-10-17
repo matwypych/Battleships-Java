@@ -9,6 +9,8 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
@@ -44,6 +46,7 @@ public class BattleShip extends Application {
     private boolean received = false;
     private String Boards;
     private boolean rec = false;
+    private static int hits = 0;
 
 
     public BattleShip(int p) {
@@ -57,108 +60,244 @@ public class BattleShip extends Application {
 
 
         BorderPane root = new BorderPane();
-        root.setPrefSize(600, 800);
+        root.setPrefSize(700, 900);
 
         if(ships == 2) {
             ships = 9;
             shipsToHit = ships;
-            root.setRight(new Text("Masz do wyboru 2 statki" + '\n'
-                                    + "Pierwszy - 5 polowy" + '\n'
-                                    + "Drugi - 4 polowy"));
+            Text text3 = new Text("Masz do wyboru 2 statki" + '\n'
+                    + "Pierwszy - 5 polowy" + '\n'
+                    + "Drugi - 4 polowy");
+            text3.setFont(Font.font("Arial",10));
+            root.setRight(text3);
         }
         else if(ships == 3){
             ships = 12;
             shipsToHit = ships;
-            root.setRight(new Text("Masz do wyboru 3 statki" + '\n'
+            Text text3 = new Text("Masz do wyboru 3 statki" + '\n'
                     + "Pierwszy - 5 polowy" + '\n'
                     + "Drugi - 4 polowy" + '\n'
-                    + "Trzeci - 3 polowy"));
+                    + "Trzeci - 3 polowy");
+            text3.setFont(Font.font("Arial",10));
+            root.setRight(text3);
+
         }
         else if(ships == 5){
             ships = 14;
             shipsToHit = ships;
-            root.setRight(new Text("Masz do wyboru 3 statki" + '\n'
-                    + "Pierwszy - 5 polowy" + '\n'
-                    + "Drugi - 4 polowy" + '\n'
-                    + "Trzeci - 3 polowy" + '\n'
-                    + "Czwarty - 2 polowy" + '\n'
-                    + "Piąty - 1 polowy"));
+            Text text3 = new Text("Masz do wyboru 3 statki\" + '\\n'\n" +
+                    "                    + \"Pierwszy - 5 polowy\" + '\\n'\n" +
+                    "                    + \"Drugi - 4 polowy\" + '\\n'\n" +
+                    "                    + \"Trzeci - 3 polowy\" + '\\n'\n" +
+                    "                    + \"Czwarty - 2 polowy\" + '\\n'\n" +
+                    "                    + \"Piąty - 1 polowy");
+            text3.setFont(Font.font("Arial",10));
+            root.setRight(text3);
         }
+
+
+        Platform.runLater(new Runnable() {
+            @Override
+            public void run() {
+                Text text = new Text("Wybierz statki");
+                Text text2 = new Text("Pól do wybrania: " + ships);
+
+                text.setFont(Font.font("Arial Black",15));
+                text2.setFont(Font.font("Arial Black",15));
+
+                text.setFill(Color.BLACK);
+                text2.setFill(Color.BLACK);
+
+                root.setRight(text);
+                root.setRight(text2);
+            }
+        });
 
         enemyBoard = new GameBoard(true, event -> {
             Thread t = new Thread(() -> {
 
+                BattleShipClient.counter = 0;
+                int hmt = 0;
 
-
-            if(!endGame && pickTime){
+            if (!endGame && pickTime) {
 
                 Cell cell = (Cell) event.getSource();
-                int counter1=0;
-                int counter2=0;
+                int counter1 = 0;
+                int counter2 = 0;
                 String ans = "";
 
 
                 System.out.println(cell.x + " " + cell.y);
                 System.out.println(endGame + "" + pickTime + "" + myTurn);
-
-                if(BattleShipClient.counter1<10) {
-                    BattleShipClient.counter = 0;
-
-                        if (enemyBoard.placeShip(new Ship(event.getButton() == MouseButton.PRIMARY), cell.x, cell.y)) {
-
-                            beginMarking(cell.x, cell.y);
-                            //System.out.println("Wysylam picka : " + String.valueOf(cell.x) + String.valueOf(cell.y) );
-                            client.SendRequest("tab" + String.valueOf(cell.x) + String.valueOf(cell.y));
-                            BattleShipClient.counter++;
-                            System.out.println("Licznik: " + BattleShipClient.counter++);
-                            rec = false;
-                        }
+                System.out.println("Do trafienia" + shipsToHit);
 
 
-                    while (!rec) {
-                        try {
-                            System.out.println("Probuje odebrac");
-                            ans = client.receiveRequest();
+        /////////////////////////// choosing
 
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                        if (ans.endsWith("Not")) {
-                            System.out.println("jescze nie gotowe do odebrania");
-                        }
-                        if (ans.endsWith(" ")) {
-                            System.out.println("Jest gotowe");
-                            rec = true;
-                            System.out.println("Odberalem: " + ans);
-                            BattleShipClient.counter1++;
+
+                enemyBoard.placeShip(new Ship(event.getButton() == MouseButton.PRIMARY), cell.x, cell.y);
+
+                    if(beginMarking(cell.x, cell.y)){
+
+                        hits++;
+                        System.out.println("Trafienie ! Ilosc trafien: " + hits);
+                        if(hits==shipsToHit){
+                            endGame=true;
+                            pickTime=false;
+                            if(player1){
+                                client.SendRequest("End1");
+                                System.out.println("Koniec gry Gracz 1 wins");
+                            }
+                            else {
+                                client.SendRequest("End2");
+                                System.out.println("Koniec gry Gracz 2 wins");
+                            }
                         }
                     }
-                }
 
-                   /*
-               if(player1 && !myTurn){
-                    String answer = "";
+                    Platform.runLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            Text text = new Text("Poczekaj na ruch przeciwnika");
+                            text.setFont(Font.font("Arial Black",25));
+                            text.setFill(Color.RED);
+                            root.setBottom(text);
+                        }
+                    });
+
+                   if(!endGame)
+                   {
+                       //System.out.println("Wysylam picka : " + String.valueOf(cell.x) + String.valueOf(cell.y) );
+                       client.SendRequest("tab" + String.valueOf(cell.x) + String.valueOf(cell.y));
+                   }
+                rec = false;
+
+
+                while (!rec) {
                     try {
-                        answer = client.receiveRequest();
-                        System.out.println("Pick otrzymany z serwera: " +answer);
-                        myTurn=true;
+                        ans = client.receiveRequest();
+                        System.out.println(ans);
+
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
-                }
-                else if(!player1 && !myTurn){
-                    String answer = "";
-                    try {
-                        answer = client.receiveRequest();
-                        System.out.println("Pick otrzymany z serwera: " +answer);
-                        myTurn=true;
-                    } catch (Exception e) {
-                        e.printStackTrace();
+                    if (ans.endsWith("Not")) {
+                        System.out.println("jescze nie gotowe do odebrania");
+                       // root.setBottom(new Text());
+                    }
+                    if (ans.endsWith(" ")) {
+                        System.out.println("Jest gotowe");
+                        rec = true;
+                        System.out.println("Odberalem: " + ans);
+
+                        Platform.runLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                Text text = new Text("Teraz twoj ruch");
+                                text.setFont(Font.font("Arial Black",25));
+                                text.setFill(Color.GREEN);
+                                root.setBottom(text);
+                            }
+                        });
+
+                        BattleShipClient.counter1++;
+                        if(ans.endsWith("2win ")){
+                            System.out.println("Wygrywa gracz 2");
+                            rec=true;
+                            Platform.runLater(new Runnable() {
+                                @Override
+                                public void run() {
+                                    Text text = new Text("Wygrywa gracz 2");
+                                    text.setFont(Font.font("Arial Black",25));
+                                    text.setFill(Color.GREEN);
+                                    root.setBottom(text);
+                                }
+                            });
+                        }
+                        else if(ans.endsWith("1win ")){
+                            System.out.println("Wygrywa gracz 1");
+                            rec=true;
+                            Platform.runLater(new Runnable() {
+                                @Override
+                                public void run() {
+                                    Text text = new Text("Wygrywa gracz 1");
+                                    text.setFont(Font.font("Arial Black",25));
+                                    text.setFill(Color.GREEN);
+                                    root.setBottom(text);
+                                }
+                            });
+                        }
+                        else if(ans.startsWith("1win")){
+                            System.out.println("Wygrywa gracz 1");
+                            rec=true;
+                            Platform.runLater(new Runnable() {
+                                @Override
+                                public void run() {
+                                    Text text = new Text("Wygrywa gracz 1");
+                                    text.setFont(Font.font("Arial Black",25));
+                                    text.setFill(Color.GREEN);
+                                    root.setBottom(text);
+                                }
+                            });
+                        }
+                        else if(ans.startsWith("2win")){
+                            System.out.println("Wygrywa gracz 2");
+                            rec=true;
+                            Platform.runLater(new Runnable() {
+                                @Override
+                                public void run() {
+                                    Text text = new Text("Wygrywa gracz 2");
+                                    text.setFont(Font.font("Arial Black",25));
+                                    text.setFill(Color.GREEN);
+                                    root.setBottom(text);
+                                }
+                            });
+                        }
+                        else if(ans.startsWith("  ")){
+                            Platform.runLater(new Runnable() {
+                                @Override
+                                public void run() {
+                                    Text text = new Text("Nie udalo sie wyslac twojego wyboru");
+                                    text.setFont(Font.font("Arial Black",25));
+                                    text.setFill(Color.RED);
+                                    root.setBottom(text);
+                                }
+                            });
+                        }
+                        else{
+                            picking(ans);
+                        }
+
+                    }
+                    if(ans.endsWith("1win")){
+                        System.out.println("Wygrywa gracz 1");
+                        rec=true;
+                        Platform.runLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                Text text = new Text("Wygrywa gracz 1");
+                                text.setFont(Font.font("Arial Black",25));
+                                text.setFill(Color.GREEN);
+                                root.setBottom(text);
+                            }
+                        });
+                    }
+                    if(ans.endsWith("2win")){
+                        System.out.println("Wygrywa gracz 2");
+                        rec=true;
+                        Platform.runLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                Text text = new Text("Wygrywa gracz 2");
+                                text.setFont(Font.font("Arial Black",25));
+                                text.setFill(Color.GREEN);
+                                root.setBottom(text);
+                            }
+                        });
                     }
                 }
-
-              */
             }
+
             });
             t.start();
 
@@ -170,10 +309,20 @@ public class BattleShip extends Application {
                 return;
 
             Cell cell = (Cell) event.getSource();
+
             if(ships > 0){
                 if (playerBoard.placeShip(new Ship(event.getButton() == MouseButton.PRIMARY), cell.x, cell.y)) {
                     playerBoard.board[cell.y][cell.x]=1;
                     ships--;
+                    Platform.runLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            Text text2 = new Text("Pól do wybrania: " + ships);
+                            text2.setFont(Font.font("Arial Black",15));
+                            text2.setFill(Color.BLACK);
+                            root.setRight(text2);
+                        }
+                    });
                 }
             }
             else if(ships == 0) {
@@ -213,7 +362,32 @@ public class BattleShip extends Application {
                         } else if(req.endsWith(" ")){
                             System.out.println("Jest ready");
                             Boards = req;
-                            beginGame();
+                            try {
+                                beginGame();
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+
+                            Platform.runLater(new Runnable() {
+                                @Override
+                                public void run() {
+                                    Text text = new Text("Gracz 1");
+                                    text.setFont(Font.font("Arial Black",20));
+                                    text.setFill(Color.BLACK);
+
+                                    Text text1 = new Text("Gracz 2");
+                                    text1.setFont(Font.font("Arial Black",20));
+                                    text1.setFill(Color.BLACK);
+
+
+                                    if(player1){
+                                        root.setTop(text);
+                                    }else{
+                                        root.setTop(text1);
+                                    }
+
+                                }
+                            });
 
                             try {
                                 received=true;
@@ -238,35 +412,101 @@ public class BattleShip extends Application {
         return root;
     }
 
+    private void picking(String data) {
+
+        char[] tab = data.toCharArray();
+
+        if(player1){
+            if(size==10 || size == 15 || size==20){
+
+                if(playerBoard.markHit(Integer.parseInt(String.valueOf(tab[8])),Integer.parseInt(String.valueOf(tab[9])))){
+                    //hits++;
+                    //System.out.println("Trafienia: " + hits);
+                }
+
+            }
+
+
+        }
+        else{
+            if(size==10 || size == 15 || size==20){
+                if(playerBoard.markHit(Integer.parseInt(String.valueOf(tab[3])),Integer.parseInt(String.valueOf(tab[4])))){
+                    //hits++;
+                    //System.out.println("Trafienia: " + hits);
+                }
+
+            }
+        }
+
+    }
+
     // funkcja wpisuje w tablice graczy zaznaczone wartosci przeslane
     // przez serwer
 
-    public void beginGame() {
+    private void beginGame() throws InterruptedException {
 
         char[] tab = Boards.toCharArray();
         System.out.println(Boards);
-        System.out.println( "rozmiar tab = " + tab.length);
+        System.out.println("rozmiar tab = " + tab.length);
 
-        if(tab.length==54){
-            for(int i=tab.length/2; i<tab.length-2; i+=3){
-                if(tab[i]!=' '){
-                    System.out.println(String.valueOf(tab[i]) + " . " + String.valueOf(tab[i+1]));
-                    enemyBoard.board[Integer.parseInt(String.valueOf(tab[i+1]))][Integer.parseInt(String.valueOf(tab[i]))]=1;
+        if (tab.length == 54) {
+            for (int i = tab.length / 2; i < tab.length - 2; i += 3) {
+                if (tab[i] != ' ') {
+                    System.out.println(String.valueOf(tab[i]) + " . " + String.valueOf(tab[i + 1]));
+                    enemyBoard.board[Integer.parseInt(String.valueOf(tab[i]))][Integer.parseInt(String.valueOf(tab[i + 1]))] = 1;
                 }
             }
-            myTurn=true;
-            player1=true;
-        }
-        else if(tab.length==58){
-            for(int i = 4; i<tab.length/2; i+=3){
-                if(tab[i]!=' '){
-                    System.out.println(String.valueOf(tab[i]) + " . " + String.valueOf(tab[i+1]));
-                    enemyBoard.board[Integer.parseInt(String.valueOf(tab[i+1]))][Integer.parseInt(String.valueOf(tab[i]))]=1;
+            myTurn = true;
+            player1 = true;
+        } else if (tab.length == 58) {
+            for (int i = 4; i < tab.length / 2; i += 3) {
+                if (tab[i] != ' ') {
+                    System.out.println(String.valueOf(tab[i]) + " . " + String.valueOf(tab[i + 1]));
+                    enemyBoard.board[Integer.parseInt(String.valueOf(tab[i]))][Integer.parseInt(String.valueOf(tab[i + 1]))] = 1;
                 }
             }
-            myTurn=true;
-            player1=false;
+            myTurn = true;
+            player1 = false;
+        } else if (tab.length == 72) {
+            for (int i = tab.length / 2; i < tab.length - 2; i += 3) {
+                if (tab[i] != ' ') {
+                    System.out.println(String.valueOf(tab[i]) + " . " + String.valueOf(tab[i + 1]));
+                    enemyBoard.board[Integer.parseInt(String.valueOf(tab[i]))][Integer.parseInt(String.valueOf(tab[i + 1]))] = 1;
+                }
+            }
+            myTurn = true;
+            player1 = true;
+        } else if (tab.length == 76) {
+            for (int i = 4; i < tab.length / 2; i += 3) {
+                if (tab[i] != ' ') {
+                    System.out.println(String.valueOf(tab[i]) + " . " + String.valueOf(tab[i + 1]));
+                    enemyBoard.board[Integer.parseInt(String.valueOf(tab[i]))][Integer.parseInt(String.valueOf(tab[i + 1]))] = 1;
+                }
+            }
+            myTurn = true;
+            player1 = false;
         }
+        else if (tab.length == 84) {
+            for (int i = tab.length / 2; i < tab.length - 2; i += 3) {
+                if (tab[i] != ' ') {
+                    System.out.println(String.valueOf(tab[i]) + " . " + String.valueOf(tab[i + 1]));
+                    enemyBoard.board[Integer.parseInt(String.valueOf(tab[i]))][Integer.parseInt(String.valueOf(tab[i + 1]))] = 1;
+                }
+            }
+            myTurn = true;
+            player1 = true;
+        }
+        else if (tab.length == 88) {
+            for (int i = 4; i < tab.length / 2; i += 3) {
+                if (tab[i] != ' ') {
+                    System.out.println(String.valueOf(tab[i]) + " . " + String.valueOf(tab[i + 1]));
+                    enemyBoard.board[Integer.parseInt(String.valueOf(tab[i]))][Integer.parseInt(String.valueOf(tab[i + 1]))] = 1;
+                }
+            }
+            myTurn = true;
+            player1 = false;
+        }
+
 
 
         System.out.println("Tablica gracza");
@@ -288,11 +528,11 @@ public class BattleShip extends Application {
         enemyBoard.showEnemyBoard();
 
 
-        pickTime=true;
+        pickTime = true;
 
     }
 
-    public boolean beginMarking(int x, int y){
+    private boolean beginMarking(int x, int y){
         System.out.println("Jestem w beginMatrk");
         return enemyBoard.MarkShip(x,y);
     }

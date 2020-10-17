@@ -3,10 +3,7 @@ package sample;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Vector;
+import java.util.*;
 
 
 public class BattleShipServer {
@@ -127,21 +124,47 @@ public class BattleShipServer {
             }
             if (counter==2){
                 boolean stop = false;
+                boolean endgame = false;
+                String mess = "";
+
                 while(!stop){
                     System.out.println("jestem gotowy na pickowanie");
                     try {
-                        Picks.add(in.readLine());
+                        String rec = in.readLine();
+                        if(rec.startsWith("End1")){
+                            System.out.println("Wysylam ze koniec gry");
+                            mess="1win";
+                            Picks.add(mess);
+                            endgame=true;
+                        } else if(rec.startsWith("End2")){
+                            System.out.println("Wysylam ze koniec gry");
+                            mess="2win";
+                            Picks.add(mess);
+                            endgame=true;
+                        }
+                        else
+                        Picks.add(rec);
                         System.out.println("serwer otrzymal wiadomosc: " + Picks);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
 
+
+
                     boolean sent = false;
 
                     while(!sent){
-                        if(Picks.size()==2){
+                        if(Picks.size()==2 && endgame){
+                            out.println(mess);
+                            out.flush();
+                            System.out.println(mess);
+                            sent=true;
+                        }
+                        else if(Picks.size()==2){
                             System.out.println(Picks);
                             System.out.println("Serwer gotowy na wyslanie");
+
+
                             for(String tab : Picks){
                                 answer1.append(tab);
                             }
@@ -151,9 +174,8 @@ public class BattleShipServer {
                             System.out.println("Serwer wyslal picki: " + answer1);
                             counter3++;
                             sent=true;
-                            Picks.clear();
-                            answer1= new StringBuilder();
-                            System.out.println("Teraz " + Picks);
+
+                            answer1 = new StringBuilder();
                         }
                         else{
                             out.println("Not");
@@ -162,6 +184,16 @@ public class BattleShipServer {
                     }
                     if(counter3==2){
                         System.out.println("Wyslano juz: " + counter3 + " razy");
+                        if(Picks.size()>0 && Picks.size()<3){
+                            Picks.clear();
+                            answer1= new StringBuilder();
+                        } else {
+                            System.out.println("Sproboj jeszcze raz");
+                        }
+
+                        System.out.println("Teraz " + Picks);
+                        System.out.println(answer1);
+                        counter3=0;
                         sent=false;
                     }
 

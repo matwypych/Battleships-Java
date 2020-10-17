@@ -4,13 +4,19 @@ import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Insets;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.BackgroundFill;
+import javafx.scene.layout.CornerRadii;
 import javafx.stage.Stage;
 import javafx.scene.control.Button;
 
 import java.awt.*;
 import java.io.IOException;
+
+import static java.awt.Color.BLACK;
 
 public class MiddleInt extends Application implements EventHandler<ActionEvent> {
 
@@ -37,9 +43,7 @@ public class MiddleInt extends Application implements EventHandler<ActionEvent> 
 
     }
 
-    public void setSize10(ActionEvent actionEvent){
-        size = 10;
-    }
+    public void setSize10(ActionEvent actionEvent){ size = 10;}
     public void setSize15(ActionEvent actionEvent){
         size = 15;
     }

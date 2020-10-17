@@ -25,6 +25,8 @@ public class BattleShipClient extends Thread{
     static Vector<int[][]> arrayFromServer;
     static BufferedReader in;
     static PrintWriter out;
+    public static int counter = 0;
+    public static int counter1 = 0;
 
 
     public BattleShipClient(int p, String h) throws IOException {
@@ -38,10 +40,10 @@ public class BattleShipClient extends Thread{
     public void SendRequest(String s) {
         out.println(s);
         out.flush();
-        //System.out.println("Wysylam " + s);
+        System.out.println("Wysylam " + s);
     }
 
-    public String receiveRequest() throws IOException {
+    public String receiveRequest() throws Exception {
         String req = in.readLine();
         //System.out.println("Serwer wyslal: " + req);
         return req;
