@@ -21,7 +21,7 @@ public class BattleShipServer {
 
 
     public static void main(String[] args) throws Exception {
-        System.out.println("The chat server is running.");
+      
         ServerSocket listener = new ServerSocket(PORT);
         try {
             while (true) {
@@ -104,12 +104,12 @@ public class BattleShipServer {
                     }
                     else if(PlayerBoards.size()==2){
 
-                            //System.out.println("Serwer wysyla tablice");
+                            
                             for(int[][] tab : PlayerBoards){
                                 for(int y=0;y<tab.length;y++){
                                     for(int x=0;x<tab.length;x++){
                                         if(tab[y][x]==1) {
-                                            //System.out.println("y: " + y + " x:" + x);
+                                            
                                             tabInString += y + "" + x + " ";
                                         }
                                     }
@@ -128,23 +128,23 @@ public class BattleShipServer {
                 String mess = "";
 
                 while(!stop){
-                    System.out.println("jestem gotowy na pickowanie");
+                   
                     try {
                         String rec = in.readLine();
                         if(rec.startsWith("End1")){
-                            System.out.println("Wysylam ze koniec gry");
+                            
                             mess="1win";
                             Picks.add(mess);
                             endgame=true;
                         } else if(rec.startsWith("End2")){
-                            System.out.println("Wysylam ze koniec gry");
+                            
                             mess="2win";
                             Picks.add(mess);
                             endgame=true;
                         }
                         else
                         Picks.add(rec);
-                        System.out.println("serwer otrzymal wiadomosc: " + Picks);
+                       
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -161,17 +161,14 @@ public class BattleShipServer {
                             sent=true;
                         }
                         else if(Picks.size()==2){
-                            System.out.println(Picks);
-                            System.out.println("Serwer gotowy na wyslanie");
-
-
+                        
                             for(String tab : Picks){
                                 answer1.append(tab);
                             }
 
                             out.println(answer1+" ");
                             out.flush();
-                            System.out.println("Serwer wyslal picki: " + answer1);
+                           
                             counter3++;
                             sent=true;
 
@@ -183,7 +180,7 @@ public class BattleShipServer {
                         }
                     }
                     if(counter3==2){
-                        System.out.println("Wyslano juz: " + counter3 + " razy");
+                       
                         if(Picks.size()>0 && Picks.size()<3){
                             Picks.clear();
                             answer1= new StringBuilder();
@@ -191,8 +188,7 @@ public class BattleShipServer {
                             System.out.println("Sproboj jeszcze raz");
                         }
 
-                        System.out.println("Teraz " + Picks);
-                        System.out.println(answer1);
+                       
                         counter3=0;
                         sent=false;
                     }
@@ -204,20 +200,6 @@ public class BattleShipServer {
 
             }
 
-/*
-                while (counter1<2){
-                    System.out.println("counter 1: " + counter1);
-                        out.println(tabInString);
-                        out.flush();
-                        counter1++;
-
-                        System.out.println("Wysylam z serwera tablice: ");
-                        System.out.println("Nasz string");
-                        System.out.println(tabInString);
-
-                }
-
- */
             }
         }
     }
